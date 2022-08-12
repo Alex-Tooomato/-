@@ -27,7 +27,7 @@
 - cin.get 函数执行时，它开始从先前输入操作停止的键盘缓冲区读取，并发现了换行符，所以它无须等待用户输入另一个值。
 - 读取string对象时，string对象会自动忽略开头处的空白（即空格符、换行符、制表符等），并从第一个真正的字符开始读起，直到遇见下一处空白为止，认为为一个字符串。
 
-# [ACM](https://so.csdn.net/so/search?q=ACM&spm=1001.2101.3001.7020)模式输入输出参考程序
+# ACM模式输入输出参考程序
 
 ```c++
 #include<iostream>
@@ -208,8 +208,16 @@ int main() {
 	}
 	return 0;
 }
-
-
+int n;
+cin>>n;
+getchar();
+string line;
+vector<int> strs;
+stringstream ss(line);
+string str;
+while (getline(ss, str, ',')) {
+	strs.push_back(stoi(s));
+}
 
 int main() {
 	string str;

@@ -197,3 +197,65 @@ https://blog.csdn.net/xingjiarong/article/details/50920207
 对于一个进程来说，PCB就好像是他的记账先生，当一个进程被创建时PCB就被分配，然后有关进程的所有信息就全都存储在PCB中，例如，打开的文件，[页表](https://so.csdn.net/so/search?q=页表&spm=1001.2101.3001.7020)基址寄存器，进程号等等。在linux中PCB是用结构task_struct来表示的，我们首先来看一下task_struct的组成。
 
 get_free_page()用来分配存储PCB的空间，这个PCB存储在堆栈的最底层
+
+# 主要结构源码
+
+## 内存节点
+
+- NUMA系统的内存节点，根据处理器和内存的距离划分； 在具有不连续内存的UMA系统中，表示比区域的级别理高的内存区域，根据物理地址是否连续划分，每块物理地址连续的内存是一个内存节点。内存节点使用一个pglist_data结构体数据类型描述内存布局。
+
+![img](https://img-blog.csdnimg.cn/img_convert/ec89a3886fec80c66b8d97f7799e7394.png)
+
+- 成员node_mem_map指向页描述符数组，每个物理页对应一个页描述符。node_mem_map可能不是指向数组的第一个元素，因为页描述符数组的大小必须对齐到2的(MAX_ORDER-1)次方。(MAX_ORDER-1)是页分配器可分配的最大阶数。具体pglist_ddata对应内核源码分析如下：
+
+https://blog.csdn.net/youzhangjing_/article/details/124898650
+
+### 系统中的每个物理页面用struct page数据结构对象来表示（内核空间mem_map的结构体）
+
+mem_map管理着系统中所有的物理内存页面。
+
+```c
+struct page {
+        unsigned long flags;         
+        atomic_t _count;
+        union {
+                atomic_t _mapcount;
+                unsigned int inuse;
+        };
+        union {
+            struct {
+                unsigned long private;
+                struct address_space *mapping;
+            };
+            struct kmem_cache *slab;    /* SLUB: Pointer to slab */
+            struct page *first_page;    /* Compound tail pages */
+        };
+        union {
+                pgoff_t index;          /* Our offset within mapping. */
+                void *freelist;         /* SLUB: freelist req. slab lock */
+        };
+        struct list_head lru;       
+
+#if defined(WANT_PAGE_VIRTUAL) 
+        void *virtual;
+#endif         
+};
+```
+
+### slab分配器
+
+一组用来存储同一种对象（如task_struct，mm_struct等结构体）的slab叫cache
+
+https://zhuanlan.zhihu.com/p/359247565
+
+```c
+struct slab {
+	struct list_head list;        //链表结构
+	unsigned long colouroff;        //对象区的起点与slab起点之间的偏移
+	void *s_mem;		/* 对象区在slab中的起点 */
+	unsigned int inuse;	/* 记录已分配对象空间数目的计数器 */
+	kmem_bufctl_t free;        //指向了对象链中的第一个空闲对象
+	unsigned short nodeid;
+};
+```
+

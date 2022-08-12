@@ -60,7 +60,7 @@ threadpool_t *threadpool_create(int min_thr_num, int max_thr_num, int queue_max_
     threadpool_t *pool = NULL;          /* 线程池 结构体 */
 
     do {
-        if((pool = (threadpool_t *)malloc(sizeof(threadpool_t))) == NULL) {  
+        if((pool = (threadpool_t *)malloc(sizeof(threadpool_t))) == NULL) {  //分配线程池空间
             printf("malloc threadpool fail");
             break;                                      /*跳出do while*/
         }
@@ -77,7 +77,7 @@ threadpool_t *threadpool_create(int min_thr_num, int max_thr_num, int queue_max_
         pool->shutdown = false;                         /* 不关闭线程池 */
 
         /* 根据最大线程上限数， 给工作线程数组开辟空间, 并清零 */
-        pool->threads = (pthread_t *)malloc(sizeof(pthread_t)*max_thr_num); 
+        pool->threads = (pthread_t *)malloc(sizeof(pthread_t)*max_thr_num); //pid数组
         if (pool->threads == NULL) {
             printf("malloc threads fail");
             break;
@@ -312,7 +312,7 @@ int threadpool_free(threadpool_t *pool)
     }
     if (pool->threads) {
         free(pool->threads);
-        pthread_mutex_lock(&(pool->lock));
+        pthread_mutex_lock(&(pool->lock));//?应该unlock吧
         pthread_mutex_destroy(&(pool->lock));
         pthread_mutex_lock(&(pool->thread_counter));
         pthread_mutex_destroy(&(pool->thread_counter));

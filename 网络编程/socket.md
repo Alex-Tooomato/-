@@ -75,6 +75,38 @@ uint32_t htohl(uint32_t netlong);//网络-->本地（IP）
 uint16_t htohs(uint16_t netshort);//网络-->本地（port）
 ```
 
+```c
+long htonl(long value)
+{
+return ((value <<24 )|((value<<8)&0x00FF0000)|((value>>8)&0x0000FF00)|(value>>24));
+}
+```
+
+函数其实很好理解，就是小端装换成大端，因为网络地址是大端，而正常的网络地址是小端。原理很好理解，一个四个值分别为：(假设value值为0x12345678，转化后数据为：0x78563412)
+
+```
+1. value <<24				得到0x7800 0000
+2. (value<<8)&0x00FF0000)	得到0x0056 0000
+3. (value>>8)&0x0000FF00)	得到0x0000 3400
+4. value>>24				得到0x0000 0012
+```
+
+但是问题在于value <<24 和value>>24能否想要的值。在windows的编译器上，能够成功的得到。**但是在Linux上得到的值是错误的**，因为value<<24得到的值并非0x7800 0000 而是0x7812 3456
+
+保险起见使用一下自定义函数：
+
+```c
+long htonl(long value)
+
+{
+
+return (((value <<24 )&0xFF000000)|((value<<8)&0x00FF0000)|((value>>8)&0x0000FF00)|((value>>24)&0x000000FF));
+
+}
+```
+
+
+
 ## IP地址转换函数
 
 ```c

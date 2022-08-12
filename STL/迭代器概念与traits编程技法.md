@@ -120,3 +120,49 @@ https://bbs.csdn.net/topics/10069671?list=68079
 
 1. 就继承而严，如果类A继承了类B，而a是A的对象，b是B的对象，那么我们可以说a也是B的对象，却不能说b也是A的对象
 2. 相反，如果C1改善了C2，而T1是C1的模型，T2是C2的模型，那么不可以说T1是C2的模型，却能说T2是C1的模型。例如：概念Bidirectional iterators改善了概念Forward iterators，可使用满足后者模型之处，都可使用前者产生的模型，反之不然。
+
+STL算法的命名规则：以算法所能接受之最低阶迭代器类型，来为迭代器型别参数命名。
+
+例如：
+
+```c++
+template <class InputIterator, class Distance>
+inline void advance(InputIterator& i,Distance n);
+```
+
+在是线上使用了五个标记用的classes，并由继承机制实现上面的命名规则，如果某个型别需要特殊处理，就重载该class tag，可将class tag作为第三个参数传入。这些tag如下
+
+```c++
+struct input_iterator_tag { };
+struct output_iterator_tag { };
+struct forward_iterator_tag : public input_iterator_tag { };
+struct bidirectional_iterator_tag : public forward_iterator_tag { };
+struct random_access_iterator_tag : public bidirectional_iterator_tag { };
+```
+
+
+
+## std::iterator的保证
+
+为了保证iterator设计顺利，只需继承如下STL提供的iterator class
+
+```c++
+template <class Category,
+		  class T,
+		  class Distace = ptrdiff_t,
+		  class Pointer = T*,
+		  class Reference = T&>
+struct iterator{
+    typedef Categoty	iterator_category;
+    typedef T			value_type;
+    typedef Distance	difference_type;
+    typedef Pointer		pointer;
+    typedef Reference	reference;
+};
+//示例
+template <class Item>
+struct ListIter:
+	public std::iterator<std::forward_iterator_tag, Item>
+{...}
+```
+
